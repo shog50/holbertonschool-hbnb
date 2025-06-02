@@ -30,6 +30,10 @@ User model → Uses → UserRepository.save() (Persistence).
 
 Database returns success/failure.
 
+![uml](part1/Untitled Diagram.drawio.png)
+
+
+
 
 # High-Level Package Diagram
 
