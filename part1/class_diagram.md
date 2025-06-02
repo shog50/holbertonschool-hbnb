@@ -1,3 +1,53 @@
+Explanatory Notes
+Entities & Responsibilities
+User
+
+Attributes: id, first_name, last_name, email, password, is_admin (for admin checks).
+
+Methods: create(), update(), delete().
+
+Relationships:
+
+Owns 0..* Places (One-to-Many).
+
+Writes 0..* Reviews (One-to-Many).
+
+Place
+
+Attributes: title, description, price, latitude/longitude (location).
+
+Methods: add_amenity(), remove_amenity().
+
+Relationships:
+
+Owned by 1 User (Many-to-One).
+
+Contains 0..* Amenities (Many-to-Many).
+
+Has 0..* Reviews (One-to-Many).
+
+Review
+
+Attributes: comment, rating (validated 1-5).
+
+Methods: validate_rating().
+
+Relationships:
+
+Written by 1 User (Many-to-One).
+
+Belongs to 1 Place (Many-to-One).
+
+Amenity
+
+Attributes: name, description.
+
+Relationships:
+
+Linked to 0..* Places (Many-to-Many).
+
+
+
 # Detailed Class Diagram (Business Logic Layer)
 
 ```mermaid
