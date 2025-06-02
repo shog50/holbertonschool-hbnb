@@ -15,6 +15,7 @@ Database checks for existing email (returns 409 if conflict).
 Password is hashed, and user is saved (returns 201 on success).
 
 # User Registration:
+```mermaid
 sequenceDiagram
     participant User
     participant API as UserAPI
