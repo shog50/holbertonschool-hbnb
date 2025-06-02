@@ -1,32 +1,3 @@
-# High-Level Package Diagram
-
-```mermaid
-classDiagram
-    class PresentationLayer {
-        <<Interface>>
-        +UserAPI
-        +PlaceAPI
-        +ReviewAPI
-        +AmenityAPI
-    }
-
-    class BusinessLogicLayer {
-        +User
-        +Place
-        +Review
-        +Amenity
-    }
-
-    class PersistenceLayer {
-        +UserRepository
-        +PlaceRepository
-        +ReviewRepository
-        +AmenityRepository
-    }
-
-    PresentationLayer --> BusinessLogicLayer : Uses Facade
-    BusinessLogicLayer --> PersistenceLayer : Database Operations
-
 Explanatory Notes1. Layers
 Presentation Layer (API):
 
@@ -58,3 +29,33 @@ UserAPI (Presentation) → Calls → User.create() (Business Logic).
 User model → Uses → UserRepository.save() (Persistence).
 
 Database returns success/failure.
+
+
+# High-Level Package Diagram
+
+```mermaid
+classDiagram
+    class PresentationLayer {
+        <<Interface>>
+        +UserAPI
+        +PlaceAPI
+        +ReviewAPI
+        +AmenityAPI
+    }
+
+    class BusinessLogicLayer {
+        +User
+        +Place
+        +Review
+        +Amenity
+    }
+
+    class PersistenceLayer {
+        +UserRepository
+        +PlaceRepository
+        +ReviewRepository
+        +AmenityRepository
+    }
+
+    PresentationLayer --> BusinessLogicLayer : Uses Facade
+    BusinessLogicLayer --> PersistenceLayer : Database Operations
