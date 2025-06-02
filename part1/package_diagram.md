@@ -1,4 +1,5 @@
-Explanatory Notes1. Layers
+Explanatory Notes
+Layers:
 Presentation Layer (API):
 
 Handles HTTP requests/responses.
