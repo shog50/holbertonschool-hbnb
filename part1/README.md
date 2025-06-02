@@ -18,7 +18,8 @@ Handles database operations. Acts as an interface to the storage layer.
 2. 🏠 Place Creation
 3. 🧾 Review Submission
 4. 🔍 Fetching Places (Filter by Price)
-Key Features
+   
+- Key Features
 1. Clean architecture with clear separation of concerns
 2. Input validation, error handling, and ownership verification
 3. Modular design (easily testable and extensible)
