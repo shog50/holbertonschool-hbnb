@@ -7,10 +7,10 @@ A modular backend design for a property listing and booking platform, similar to
 Handles HTTP requests/responses. Forwards calls to the business logic.
 E.g., POST /users → User.create().
 
-2. Business Logic Layer (Models)
+  2. Business Logic Layer (Models)
 Core domain logic: validation, transformations, and decision-making.
 
-3. Persistence Layer (Repositories)
+  3. Persistence Layer (Repositories)
 Handles database operations. Acts as an interface to the storage layer.
 - Business Logic Layer
 - Sequence Diagrams
