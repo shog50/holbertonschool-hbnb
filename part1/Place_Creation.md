@@ -1,4 +1,4 @@
-#Explanatory Notes
+# Explanatory Notes
 Purpose
 Depicts the flow for creating a new place, including:
 

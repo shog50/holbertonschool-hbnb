@@ -1,4 +1,4 @@
-#Explanatory Notes
+# Explanatory Notes
 
 Explanatory Notes:
 
@@ -16,6 +16,11 @@ Password is hashed, and user is saved (returns 201 on success).
 
 # User Registration:
 ```mermaid
+---
+config:
+  theme: forest
+  look: handDrawn
+---
 sequenceDiagram
     participant User
     participant API as UserAPI

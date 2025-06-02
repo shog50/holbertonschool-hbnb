@@ -1,5 +1,4 @@
-
-#Explanatory Notes
+# Explanatory Notes
 Purpose
 Shows the flow for retrieving places with a minimum price filter, including:
 
@@ -40,7 +39,7 @@ Returns 200 OK with array of matching places
 
 
 
-#Fetching a List of Places
+# Fetching a List of Places
 
 ```mermaid
 ---

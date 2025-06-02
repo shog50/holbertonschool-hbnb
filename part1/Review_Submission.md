@@ -1,4 +1,4 @@
-#Explanatory Notes
+# Explanatory Notes
 
 Purpose
 Illustrates the end-to-end flow for submitting a review, including:
@@ -34,7 +34,7 @@ Valid reviews are saved to the database.
 
 Success: Returns 201 Created with the review_id and rating.
 
-#Review Submission
+# Review Submission
 ```mermaid
 ---
 config:
