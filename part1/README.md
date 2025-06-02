@@ -3,15 +3,12 @@ HBnB Evolution Clean Architecture Backend
 A modular backend design for a property listing and booking platform, similar to AirBnB. This architecture separates concerns into three layers: Presentation, Business Logic, and Persistence. The system supports operations such as user registration, place creation, review submission, and amenity management.
 - High-Level Architecture
   Layer Responsibilities
-  1. Presentation Layer (API)
-     Handles HTTP requests/responses. Forwards calls to the business logic.
+  1. Presentation Layer (API): Handles HTTP requests/responses. Forwards calls to the business logic.
 E.g., POST /users → User.create().
 
-  2. Business Logic Layer (Models)
-     Core domain logic: validation, transformations, and decision-making.
+  2. Business Logic Layer (Models): Core domain logic: validation, transformations, and decision-making.
 
-  3. Persistence Layer (Repositories)
-Handles database operations. Acts as an interface to the storage layer.
+  3. Persistence Layer (Repositories): Handles database operations. Acts as an interface to the storage layer.
 - Business Logic Layer
 - Sequence Diagrams
 1. 🧾 User Registration
