@@ -4,11 +4,11 @@ A modular backend design for a property listing and booking platform, similar to
 - High-Level Architecture
   Layer Responsibilities
   1. Presentation Layer (API)
-Handles HTTP requests/responses. Forwards calls to the business logic.
+     Handles HTTP requests/responses. Forwards calls to the business logic.
 E.g., POST /users → User.create().
 
   2. Business Logic Layer (Models)
-Core domain logic: validation, transformations, and decision-making.
+     Core domain logic: validation, transformations, and decision-making.
 
   3. Persistence Layer (Repositories)
 Handles database operations. Acts as an interface to the storage layer.
