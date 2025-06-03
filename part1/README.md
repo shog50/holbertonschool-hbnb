@@ -38,3 +38,7 @@ These models are designed with extensibility and data consistency in mind.
 3. Modular design (easily testable and extensible)
 4. UUID identifiers and timestamp tracking for all entities
 5. Supports CRUD operations for Users, Places, Reviews, and Amenities
+## Authors
+- Shouq Alosaimi
+- Layan Aljunayh
+- Razan Alabdulhadi
