@@ -3,12 +3,12 @@
 A modular backend design for a property listing and booking platform, similar to AirBnB. This architecture separates concerns into three layers: Presentation, Business Logic, and Persistence. The system supports operations such as user registration, place creation, review submission, and amenity management.
 ##  High-Level Architecture
  ### Layer Responsibilities
-  1. Presentation Layer (API): Handles HTTP requests/responses. Forwards calls to the business logic.
+- **Presentation Layer (API):** Handles HTTP requests/responses. Forwards calls to the business logic.
 E.g., POST /users → User.create().
 
-  2. Business Logic Layer (Models): Core domain logic: validation, transformations, and decision-making.
+- **Business Logic Layer (Models):** Core domain logic: validation, transformations, and decision-making.
 
-  3. Persistence Layer (Repositories): Handles database operations. Acts as an interface to the storage layer.
+- **Persistence Layer (Repositories):** Handles database operations. Acts as an interface to the storage layer.
 ##  Business Logic Layer
 
 This layer defines core domain entities and enforces business rules:
@@ -27,10 +27,10 @@ This layer defines core domain entities and enforces business rules:
 
 These models are designed with extensibility and data consistency in mind.
 ##  Sequence Diagrams
-1. 🧾 User Registration
-2. 🏠 Place Creation
-3. 🧾 Review Submission
-4. 🔍 Fetching Places (Filter by Price)
+- **🧾 User Registration**
+- **🏠 Place Creation**
+- **🧾 Review Submission**
+- **🔍 Fetching Places (Filter by Price)**
    
 ##  Key Features
 1. Clean architecture with clear separation of concerns
