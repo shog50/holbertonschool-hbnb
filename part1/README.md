@@ -10,6 +10,22 @@ E.g., POST /users → User.create().
 
   3. Persistence Layer (Repositories): Handles database operations. Acts as an interface to the storage layer.
 ##  Business Logic Layer
+
+This layer defines core domain entities and enforces business rules:
+
+- **User**  
+  Can register, authenticate, own places, and write reviews. Can be a regular user or admin.
+
+- **Place**  
+  Represents a rental listing. Includes amenities and reviews. Owned by a user.
+
+- **Review**  
+  Linked to a user and a place. Includes rating and feedback. Validates against duplicate or self-reviews.
+
+- **Amenity**  
+  Represents features such as Wi-Fi, air conditioning, etc. Can be linked to multiple places.
+
+These models are designed with extensibility and data consistency in mind.
 ##  Sequence Diagrams
 1. 🧾 User Registration
 2. 🏠 Place Creation
