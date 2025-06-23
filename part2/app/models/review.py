@@ -1,4 +1,4 @@
-from . import BaseModel
+from app.models.base_model import BaseModel
 from typing import Optional
 
 class Review(BaseModel):

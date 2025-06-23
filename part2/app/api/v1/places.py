@@ -22,12 +22,10 @@ place_response_model = api.model('PlaceResponse', {
     'latitude': fields.Float(description='Geographic coordinate'),
     'longitude': fields.Float(description='Geographic coordinate'),
     'owner_id': fields.String(description='Owner ID'),
-    'amenities': fields.List(fields.Nested(
-        api.model('PlaceAmenity', {
+    'amenities': fields.List(fields.Nested(api.model('PlaceAmenity', {
             'id': fields.String,
             'name': fields.String
-        })
-    )
+    })))
 })
 
 @api.route('/')
@@ -89,7 +87,7 @@ class PlaceResource(Resource):
         data = api.payload
         
         # Price validation if provided
-        if 'price' in data and (not isinstance(data['price'], (int, float)) or data['price'] <= 0:
+        if 'price' in data and (not isinstance(data['price'], (int, float)) or data['price']) <= 0:
             abort(400, 'Price must be a positive number')
 
         try:

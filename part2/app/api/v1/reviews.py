@@ -3,23 +3,31 @@ from app.services import facade as hbnb_facade
 
 api = Namespace('reviews', description='Review operations')
 
-# Models
-review_input_model = api.model('ReviewInput', {
-    'text': fields.String(required=True, description='Review content'),
-    'rating': fields.Integer(required=True, description='Rating (1-5)'),
-    'user_id': fields.String(required=True, description='User ID'),
-    'place_id': fields.String(required=True, description='Place ID')
-})
+# Input Model
+review_input_model = api.model(
+    'ReviewInput',
+    {
+        'text': fields.String(required=True, description='Review content'),
+        'rating': fields.Integer(required=True, description='Rating (1-5)'),
+        'user_id': fields.String(required=True, description='User ID'),
+        'place_id': fields.String(required=True, description='Place ID'),
+    }
+)
 
-review_response_model = api.model('ReviewResponse', {
-    'id': fields.String(description='Review ID'),
-    'text': fields.String(description='Review content'),
-    'rating': fields.Integer(description='Rating (1-5)'),
-    'user_id': fields.String(description='User ID'),
-    'place_id': fields.String(description='Place ID'),
-    'created_at': fields.DateTime(description='Creation date'),
-    'updated_at': fields.DateTime(description='Last update date')
-})
+# Response Model
+review_response_model = api.model(
+    'ReviewResponse',
+    {
+        'id': fields.String(description='Review ID'),
+        'text': fields.String(description='Review content'),
+        'rating': fields.Integer(description='Rating (1-5)'),
+        'user_id': fields.String(description='User ID'),
+        'place_id': fields.String(description='Place ID'),
+        'created_at': fields.DateTime(description='Creation date'),
+        'updated_at': fields.DateTime(description='Last update date'),
+    }
+)
+
 
 @api.route('/')
 class ReviewList(Resource):
@@ -41,10 +49,10 @@ class ReviewList(Resource):
     def post(self):
         """Create a new review"""
         data = api.payload
-        
-        # Validate required fields
+
         if not data.get('text'):
             abort(400, 'Review text is required')
+
         if not isinstance(data.get('rating'), int) or not (1 <= data['rating'] <= 5):
             abort(400, 'Rating must be an integer between 1 and 5')
 
@@ -57,6 +65,7 @@ class ReviewList(Resource):
             abort(404, str(e))
         except Exception as e:
             abort(500, str(e))
+
 
 @api.route('/<string:review_id>')
 @api.param('review_id', 'The review identifier')
@@ -81,7 +90,7 @@ class ReviewResource(Resource):
     def put(self, review_id):
         """Update review details"""
         data = api.payload
-        
+
         if 'rating' in data and (not isinstance(data['rating'], int) or not (1 <= data['rating'] <= 5)):
             abort(400, 'Rating must be an integer between 1 and 5')
 
@@ -97,7 +106,6 @@ class ReviewResource(Resource):
 
     @api.doc('delete_review')
     @api.response(204, 'Review deleted')
-    @api.response(404, 'Review not found')
     def delete(self, review_id):
         """Delete a review"""
         try:
@@ -107,6 +115,7 @@ class ReviewResource(Resource):
             return '', 204
         except Exception as e:
             abort(500, str(e))
+
 
 @api.route('/place/<string:place_id>')
 @api.param('place_id', 'The place identifier')
@@ -123,3 +132,4 @@ class PlaceReviews(Resource):
             abort(404, str(e))
         except Exception as e:
             abort(500, str(e))
+

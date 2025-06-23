@@ -1,4 +1,5 @@
-from . import BaseModel
+from typing import Optional
+from app.models.base_model import BaseModel
 
 class Amenity(BaseModel):
     """Amenity model class"""
