@@ -77,3 +77,6 @@ class HBnBFacade:
     def delete_review(self, review_id):
         deleted = self.review_repo.delete(review_id)
         return deleted
+
+facade = HBnBFacade()
+
