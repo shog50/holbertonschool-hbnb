@@ -1,32 +1,15 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager
 
-# Initialize extensions
-db = SQLAlchemy()
-
-def create_app(config_name='default'):
-    """Application factory function
-    
-    Args:
-        config_name (str): Name of the configuration to use ('development', 'testing', etc.)
-    
-    Returns:
-        Flask: The configured Flask application instance
-    """
+def create_app():
     app = Flask(__name__)
+    app.config.from_object('config.Config')
     
-    # Apply configuration
-    app.config.from_object(config[config_name])
+    # Initialize JWT
+    jwt = JWTManager(app)
     
-    # Initialize extensions
-    db.init_app(app)
-    
-    # Import and register blueprints here to avoid circular imports
-    from app.views import main_bp
-    app.register_blueprint(main_bp)
-    
-    # Create database tables
-    with app.app_context():
-        db.create_all()
+    # Import and register blueprints/APIs
+    from app.api.v1.auth import auth_bp
+    app.register_blueprint(auth_bp)
     
     return app

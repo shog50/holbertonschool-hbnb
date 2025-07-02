@@ -1,4 +1,5 @@
 from flask_restx import Namespace, Resource, fields, abort
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash
 from app.services.facade import facade as hbnb_facade
 from app.models.user import User
@@ -82,8 +83,13 @@ class UserList(Resource):
 class UserResource(Resource):
     @api.doc('get_user')
     @api.marshal_with(user_response_model)
+    @jwt_required()
     def get(self, user_id):
-        """Get user details by ID"""
+        """Get user details by ID (protected)"""
+        current_user = get_jwt_identity()
+        if current_user != user_id:
+            abort(403, 'Unauthorized - Can only view your own profile')
+            
         user = hbnb_facade.user_repo.get(user_id)
         if not user:
             abort(404, 'User not found')
@@ -93,13 +99,19 @@ class UserResource(Resource):
              responses={
                  200: 'Success',
                  400: 'Validation Error',
+                 403: 'Forbidden',
                  404: 'Not Found',
                  409: 'Email exists'
              })
     @api.expect(user_update_model)
     @api.marshal_with(user_response_model)
+    @jwt_required()
     def put(self, user_id):
-        """Update user information"""
+        """Update user information (protected)"""
+        current_user = get_jwt_identity()
+        if current_user != user_id:
+            abort(403, 'Unauthorized - Can only update your own profile')
+        
         user = hbnb_facade.user_repo.get(user_id)
         if not user:
             abort(404, 'User not found')
@@ -119,3 +131,24 @@ class UserResource(Resource):
         updated_user = hbnb_facade.user_repo.get(user_id)
         
         return updated_user.to_dict()
+
+    @api.doc('delete_user',
+             responses={
+                 204: 'Deleted',
+                 403: 'Forbidden',
+                 404: 'Not Found'
+             })
+    @api.response(204, 'User deleted')
+    @jwt_required()
+    def delete(self, user_id):
+        """Delete a user (protected)"""
+        current_user = get_jwt_identity()
+        if current_user != user_id:
+            abort(403, 'Unauthorized - Can only delete your own profile')
+            
+        user = hbnb_facade.user_repo.get(user_id)
+        if not user:
+            abort(404, 'User not found')
+        
+        hbnb_facade.user_repo.delete(user_id)
+        return '', 204
