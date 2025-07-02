@@ -22,7 +22,9 @@ user_input_model = api.model('UserInput', {
 user_update_model = api.model('UserUpdate', {
     'email': fields.String(pattern=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'),
     'first_name': fields.String(),
-    'last_name': fields.String()
+    'last_name': fields.String(),
+    'current_password': fields.String(min_length=8, max_length=128),
+    'new_password': fields.String(min_length=8, max_length=128)
 })
 
 # Response Model (never includes password)
@@ -122,6 +124,12 @@ class UserResource(Resource):
         if 'email' in data and data['email'] != user.email:
             if hbnb_facade.user_repo.get_by_attribute('email', data['email']):
                 abort(409, 'Email already registered')
+        
+        # Handle password change
+        if 'current_password' in data and 'new_password' in data:
+            if not user.verify_password(data['current_password']):
+                abort(400, 'Current password is incorrect')
+            user.password_hash = generate_password_hash(data['new_password'])
         
         # Update allowed fields
         updates = {k: v for k, v in data.items() 
