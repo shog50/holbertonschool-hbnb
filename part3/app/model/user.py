@@ -32,3 +32,12 @@ class User:
             if hasattr(self, key):
                 setattr(self, key, value)
         self.updated_at = datetime.utcnow()
+
+    def set_admin(self, is_admin=True):
+        """Set or revoke admin privileges
+
+        Args:
+            is_admin (bool): True to grant admin, False to revoke
+        """
+        self.is_admin = is_admin
+        self.update({})

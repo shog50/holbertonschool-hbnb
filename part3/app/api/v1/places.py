@@ -1,6 +1,7 @@
 from flask_restx import Namespace, Resource, fields, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.facade import facade as hbnb_facade
+from app.services.auth import admin_required
 
 api = Namespace('places', description='Place operations')
 
@@ -22,9 +23,11 @@ place_response_model = api.model('PlaceResponse', {
     'longitude': fields.Float(description='Geographic coordinate'),
     'owner_id': fields.String(description='Owner ID'),
     'amenities': fields.List(fields.Nested(api.model('PlaceAmenity', {
-            'id': fields.String,
-            'name': fields.String
-    })))
+        'id': fields.String,
+        'name': fields.String
+    }))),
+    'created_at': fields.DateTime(description='Creation timestamp'),
+    'updated_at': fields.DateTime(description='Last update timestamp')
 })
 
 @api.route('/')
@@ -56,7 +59,7 @@ class PlaceList(Resource):
             abort(400, 'Price must be a positive number')
 
         # Set the owner to the current user
-        data['owner_id'] = current_user
+        data['owner_id'] = current_user['id']
 
         try:
             place = hbnb_facade.create_place(data)
@@ -89,7 +92,7 @@ class PlaceResource(Resource):
     @api.marshal_with(place_response_model)
     @jwt_required()
     def put(self, place_id):
-        """Update place details (owner only)"""
+        """Update place details (owner or admin)"""
         current_user = get_jwt_identity()
         
         try:
@@ -97,16 +100,18 @@ class PlaceResource(Resource):
             if not place:
                 abort(404, 'Place not found')
             
-            if place['owner_id'] != current_user:
-                abort(403, 'Only the owner can update this place')
+            # Check if current user is owner or admin
+            is_admin = current_user.get('is_admin', False)
+            if place['owner_id'] != current_user['id'] and not is_admin:
+                abort(403, 'Only the owner or admin can update this place')
 
             data = api.payload
             # Price validation if provided
-            if 'price' in data and (not isinstance(data['price'], (int, float)) or data['price'] <= 0:
+            if 'price' in data and (not isinstance(data['price'], (int, float)) or data['price'] <= 0):
                 abort(400, 'Price must be a positive number')
 
-            # Prevent owner_id change
-            if 'owner_id' in data:
+            # Prevent owner_id change unless admin
+            if 'owner_id' in data and not is_admin:
                 del data['owner_id']
 
             place = hbnb_facade.update_place(place_id, data)
@@ -121,7 +126,7 @@ class PlaceResource(Resource):
     @api.response(403, 'Forbidden')
     @jwt_required()
     def delete(self, place_id):
-        """Delete a place (owner only)"""
+        """Delete a place (owner or admin)"""
         current_user = get_jwt_identity()
         
         try:
@@ -129,10 +134,39 @@ class PlaceResource(Resource):
             if not place:
                 abort(404, 'Place not found')
             
-            if place['owner_id'] != current_user:
-                abort(403, 'Only the owner can delete this place')
+            # Check if current user is owner or admin
+            is_admin = current_user.get('is_admin', False)
+            if place['owner_id'] != current_user['id'] and not is_admin:
+                abort(403, 'Only the owner or admin can delete this place')
 
             hbnb_facade.delete_place(place_id)
             return '', 204
+        except Exception as e:
+            abort(500, str(e))
+
+@api.route('/<string:place_id>/transfer')
+@api.param('place_id', 'The place identifier')
+@api.response(404, 'Place not found')
+@api.response(403, 'Forbidden')
+class PlaceTransfer(Resource):
+    @api.doc('transfer_ownership', security='apikey')
+    @api.expect(api.model('TransferInput', {
+        'new_owner_id': fields.String(required=True)
+    }))
+    @api.marshal_with(place_response_model)
+    @admin_required
+    def put(self, place_id):
+        """Transfer place ownership (admin only)"""
+        try:
+            place = hbnb_facade.get_place(place_id)
+            if not place:
+                abort(404, 'Place not found')
+            
+            new_owner_id = api.payload['new_owner_id']
+            if not hbnb_facade.user_repo.get(new_owner_id):
+                abort(400, 'New owner not found')
+            
+            updated_place = hbnb_facade.update_place(place_id, {'owner_id': new_owner_id})
+            return updated_place, 200
         except Exception as e:
             abort(500, str(e))

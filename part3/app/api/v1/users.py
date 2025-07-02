@@ -1,162 +1,111 @@
-from flask_restx import Namespace, Resource, fields, abort
+from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from werkzeug.security import generate_password_hash
-from app.services.facade import facade as hbnb_facade
-from app.models.user import User
+from app.services.auth import admin_required
+from app.services import facade
 
 api = Namespace('users', description='User operations')
 
-# Request Models
-user_input_model = api.model('UserInput', {
-    'email': fields.String(required=True, 
-                         pattern=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$',
-                         description='Valid email address'),
-    'password': fields.String(required=True,
-                            min_length=8,
-                            max_length=128,
-                            description='Password (8-128 characters)'),
-    'first_name': fields.String(required=True),
-    'last_name': fields.String(required=True)
-})
-
-user_update_model = api.model('UserUpdate', {
-    'email': fields.String(pattern=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'),
-    'first_name': fields.String(),
-    'last_name': fields.String(),
-    'current_password': fields.String(min_length=8, max_length=128),
-    'new_password': fields.String(min_length=8, max_length=128)
-})
-
-# Response Model (never includes password)
+# Response model (excludes password hash)
 user_response_model = api.model('UserResponse', {
-    'id': fields.String(description='User ID'),
-    'email': fields.String(description='Email address'),
-    'first_name': fields.String(description='First name'),
-    'last_name': fields.String(description='Last name'),
-    'created_at': fields.DateTime(description='Creation date'),
-    'updated_at': fields.DateTime(description='Last update date')
+    'id': fields.String(required=True),
+    'email': fields.String(required=True),
+    'first_name': fields.String,
+    'last_name': fields.String,
+    'is_admin': fields.Boolean,
+    'created_at': fields.DateTime,
+    'updated_at': fields.DateTime
+})
+
+# Request model (for create/update)
+user_request_model = api.model('UserRequest', {
+    'email': fields.String(required=True),
+    'password': fields.String(required=True),
+    'first_name': fields.String,
+    'last_name': fields.String,
+    'is_admin': fields.Boolean(default=False)
 })
 
 @api.route('/')
 class UserList(Resource):
-    @api.doc('list_users')
     @api.marshal_list_with(user_response_model)
+    @admin_required
     def get(self):
-        """List all users (without sensitive data)"""
-        users = hbnb_facade.user_repo.get_all()
+        """List all users (Admin only)"""
+        users = facade.user_repo.get_all()
         return [user.to_dict() for user in users]
 
-    @api.doc('create_user',
-             responses={
-                 201: 'Success',
-                 400: 'Validation Error',
-                 409: 'Email exists'
-             })
-    @api.expect(user_input_model, validate=True)
+    @api.expect(user_request_model)
     @api.marshal_with(user_response_model, code=201)
+    @admin_required
     def post(self):
-        """Create a new user with hashed password"""
+        """Create a new user (Admin only)"""
         data = api.payload
         
-        # Validate required fields
-        if not all(k in data for k in ['email', 'password', 'first_name', 'last_name']):
-            abort(400, 'All fields are required')
-        
-        # Check for existing user
-        if hbnb_facade.user_repo.get_by_attribute('email', data['email']):
-            abort(409, 'Email already registered')
-        
-        try:
-            # User model automatically hashes the password
-            user = User(
-                email=data['email'],
-                password=data['password'],
-                first_name=data['first_name'],
-                last_name=data['last_name']
-            )
-            hbnb_facade.user_repo.add(user)
-            return user.to_dict(), 201
-        except ValueError as e:
-            abort(400, str(e))
+        # Validate email uniqueness
+        if facade.user_repo.get_by_attribute('email', data['email']):
+            api.abort(400, "Email already exists")
+            
+        # Create user
+        user = facade.create_user(data)
+        return user.to_dict(), 201
 
 @api.route('/<string:user_id>')
-@api.param('user_id', 'The user identifier')
-@api.response(404, 'User not found')
 class UserResource(Resource):
-    @api.doc('get_user')
     @api.marshal_with(user_response_model)
     @jwt_required()
     def get(self, user_id):
-        """Get user details by ID (protected)"""
-        current_user = get_jwt_identity()
-        if current_user != user_id:
-            abort(403, 'Unauthorized - Can only view your own profile')
+        """Get user details"""
+        current_user_id = get_jwt_identity()['id']
+        
+        # Users can view their own profile, admins can view any
+        if user_id != current_user_id and not facade.user_repo.get(current_user_id).is_admin:
+            api.abort(403, "Not authorized to view this user")
             
-        user = hbnb_facade.user_repo.get(user_id)
+        user = facade.user_repo.get(user_id)
         if not user:
-            abort(404, 'User not found')
+            api.abort(404, "User not found")
+            
         return user.to_dict()
 
-    @api.doc('update_user',
-             responses={
-                 200: 'Success',
-                 400: 'Validation Error',
-                 403: 'Forbidden',
-                 404: 'Not Found',
-                 409: 'Email exists'
-             })
-    @api.expect(user_update_model)
+    @api.expect(user_request_model)
     @api.marshal_with(user_response_model)
-    @jwt_required()
+    @admin_required
     def put(self, user_id):
-        """Update user information (protected)"""
-        current_user = get_jwt_identity()
-        if current_user != user_id:
-            abort(403, 'Unauthorized - Can only update your own profile')
-        
-        user = hbnb_facade.user_repo.get(user_id)
+        """Update any user (Admin only)"""
+        user = facade.user_repo.get(user_id)
         if not user:
-            abort(404, 'User not found')
-        
+            api.abort(404, "User not found")
+            
         data = api.payload
         
-        # Validate email if being changed
+        # Check if email is being changed to an existing one
         if 'email' in data and data['email'] != user.email:
-            if hbnb_facade.user_repo.get_by_attribute('email', data['email']):
-                abort(409, 'Email already registered')
+            if facade.user_repo.get_by_attribute('email', data['email']):
+                api.abort(400, "Email already exists")
         
-        # Handle password change
-        if 'current_password' in data and 'new_password' in data:
-            if not user.verify_password(data['current_password']):
-                abort(400, 'Current password is incorrect')
-            user.password_hash = generate_password_hash(data['new_password'])
-        
-        # Update allowed fields
-        updates = {k: v for k, v in data.items() 
-                 if k in ['email', 'first_name', 'last_name']}
-        
-        hbnb_facade.user_repo.update(user_id, updates)
-        updated_user = hbnb_facade.user_repo.get(user_id)
-        
+        updated_user = facade.update_user(user_id, data)
         return updated_user.to_dict()
 
-    @api.doc('delete_user',
-             responses={
-                 204: 'Deleted',
-                 403: 'Forbidden',
-                 404: 'Not Found'
-             })
     @api.response(204, 'User deleted')
-    @jwt_required()
+    @admin_required
     def delete(self, user_id):
-        """Delete a user (protected)"""
-        current_user = get_jwt_identity()
-        if current_user != user_id:
-            abort(403, 'Unauthorized - Can only delete your own profile')
+        """Delete a user (Admin only)"""
+        if not facade.user_repo.get(user_id):
+            api.abort(404, "User not found")
             
-        user = hbnb_facade.user_repo.get(user_id)
-        if not user:
-            abort(404, 'User not found')
-        
-        hbnb_facade.user_repo.delete(user_id)
+        facade.user_repo.delete(user_id)
         return '', 204
+
+@api.route('/<string:user_id>/admin')
+class AdminUser(Resource):
+    @api.response(200, 'Admin status updated')
+    @admin_required
+    def post(self, user_id):
+        """Promote/demote user admin status (Admin only)"""
+        user = facade.user_repo.get(user_id)
+        if not user:
+            api.abort(404, "User not found")
+            
+        is_admin = api.payload.get('is_admin', True)
+        user.set_admin(is_admin)
+        return {'message': f"User admin status set to {is_admin}"}, 200
