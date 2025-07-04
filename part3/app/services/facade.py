@@ -1,5 +1,8 @@
 from sqlalchemy.orm import Session
-from models import User, Place, Review, Amenity
+from app.models.user import User
+from app.models.place import Place
+from app.models.review import Review
+from app.models.amenity import Amenity
 
 class Facade:
     """Complete Facade for all entities with simplified SQLAlchemy integration"""

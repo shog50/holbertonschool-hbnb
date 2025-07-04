@@ -4,7 +4,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_restx import Api
 
-from app.config import DevelopmentConfig
+from config import DevelopmentConfig
 from app.api.v1.auth import auth as auth_ns
 from app.api.v1.users import ns as users_ns, ns_users as admin_users_ns
 from app.api.v1.places import ns as places_ns
