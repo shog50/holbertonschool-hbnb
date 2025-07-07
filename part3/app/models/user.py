@@ -3,6 +3,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from .base_model import BaseModel
 
 class User(BaseModel):
+    _used_emails = set() 
+
     __tablename__ = 'users'
 
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -10,13 +12,21 @@ class User(BaseModel):
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
     is_admin = db.Column(db.Boolean, default=False)
+    reviews = db.relationship('Review', back_populates='owner', cascade='all, delete-orphan')
 
-    def __init__(self, email, password, first_name=None, last_name=None, is_admin=False):
+    def __init__(self, first_name, last_name, email, password=None, is_admin=False):
+        if not email or '@' not in email:
+            raise ValueError("Invalid email")
+        if email in User._used_emails:
+            raise ValueError("Email already used")
+        User._used_emails.add(email)
+
         self.email = email
-        self.password = password  # uses setter
         self.first_name = first_name
         self.last_name = last_name
         self.is_admin = is_admin
+        if password:
+            self.password = password  # uses setter to hash
 
     @property
     def password(self):
