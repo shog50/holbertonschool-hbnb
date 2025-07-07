@@ -1,6 +1,6 @@
 from datetime import datetime
 from uuid import uuid4
-from app import db
+from app.extensions import db
 
 class BaseModel(db.Model):
     """Base model with common fields"""

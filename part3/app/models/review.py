@@ -1,5 +1,5 @@
-from app import db
-from base_model import BaseModel
+from app.extensions import db
+from .base_model import BaseModel
 
 class Review(BaseModel):
     __tablename__ = 'reviews'

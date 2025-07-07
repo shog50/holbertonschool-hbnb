@@ -1,2 +1,5 @@
 flask-jwt-extended==4.4.4
 pyjwt==2.6.0
+flask-bcrypt
+flask-restx
+
