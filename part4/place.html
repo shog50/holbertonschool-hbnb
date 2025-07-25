@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Place Details</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="icon.png" type="image/png">
+</head>
+<body>
+
+  <!-- Header with logo and login button -->
+  <header>
+    <img src="logo.png" alt="App Logo" class="logo">
+    <a href="login.html" class="login-button">Login</a>
+  </header>
+
+  <!-- Navigation bar -->
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="login.html">Login</a>
+  </nav>
+
+  <!-- Main place details -->
+  <main>
+    <section class="place-details">
+      <div class="place-info" id="place-info">
+        <!-- Place details will be inserted here dynamically -->
+      </div>
+
+      <!-- Reviews section -->
+      <section id="reviews">
+        <h3>Reviews</h3>
+        <!-- Reviews will be inserted here dynamically -->
+      </section>
+
+      <!-- Add review button or form (shown only if user is authenticated) -->
+      <div id="review-action"></div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Extract place ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const placeId = urlParams.get('id');
+
+    const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('token='));
+    const token = tokenCookie ? tokenCookie.split('=')[1] : null;
+
+    // Fetch place details
+    fetch(`http://localhost:5000/api/places/${placeId}`)
+      .then(res => res.json())
+      .then(place => {
+        const info = document.getElementById('place-info');
+        info.innerHTML = `
+          <h2>${place.name}</h2>
+          <p><strong>Host:</strong> ${place.host}</p>
+          <p><strong>Price:</strong> ${place.price_per_night} SAR/night</p>
+          <p><strong>Description:</strong> ${place.description}</p>
+          <p><strong>Amenities:</strong> ${place.amenities.join(', ')}</p>
+        `;
+      });
+
+    // Fetch reviews
+    fetch(`http://localhost:5000/api/places/${placeId}/reviews`)
+      .then(res => res.json())
+      .then(reviews => {
+        const reviewsSection = document.getElementById('reviews');
+        reviews.forEach(review => {
+          const card = document.createElement('div');
+          card.className = 'review-card';
+          card.innerHTML = `
+            <p><strong>${review.username}</strong> (${review.rating}/5)</p>
+            <p>${review.comment}</p>
+          `;
+          reviewsSection.appendChild(card);
+        });
+      });
+
+    // Show add review button or form if user is authenticated
+    const reviewAction = document.getElementById('review-action');
+    if (token) {
+      // Show add review button
+      const btn = document.createElement('a');
+      btn.href = `add_review.html?id=${placeId}`;
+      btn.className = 'details-button';
+      btn.innerText = 'Add Review';
+      reviewAction.appendChild(btn);
+    } else {
+      // Optionally show a message to log in
+      reviewAction.innerHTML = '<p>You must <a href="login.html">login</a> to add a review.</p>';
+    }
+  </script>
+
+</body>
+</html>
+

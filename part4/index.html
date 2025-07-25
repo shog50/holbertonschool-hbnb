@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Places</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="icon.png" type="image/png">
+</head>
+<body>
+
+  <!-- Header with logo and login button -->
+  <header>
+    <img src="logo.png" alt="App Logo" class="logo">
+    <a href="login.html" class="login-button">Login</a>
+  </header>
+
+  <!-- Navigation bar with links -->
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="login.html">Login</a>
+  </nav>
+
+  <!-- Main content: list of places -->
+  <main>
+    <h1>Available Places</h1>
+    <section id="places-list">
+      <!-- Place cards will be dynamically inserted here via JavaScript -->
+    </section>
+  </main>
+
+  <!-- Footer section -->
+  <footer>
+    <p>All rights reserved.</p>
+  </footer>
+
+  <!-- JavaScript for fetching and displaying places -->
+  <script>
+    // Check if user is authenticated by looking for the token cookie
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='));
+    if (!token) {
+      // Redirect to login page if not authenticated
+      window.location.href = 'login.html';
+    }
+
+    // Fetch list of places from the API
+    fetch('http://localhost:5000/api/places', {
+      headers: {
+        'Authorization': 'Bearer ' + token.split('=')[1]
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      const list = document.getElementById('places-list');
+      data.forEach(place => {
+        // Create a card for each place
+        const card = document.createElement('div');
+        card.className = 'place-card';
+        card.innerHTML = `
+          <h2>${place.name}</h2>
+          <p>Price: ${place.price_per_night} SAR/night</p>
+          <a href="place.html?id=${place.id}" class="details-button">View Details</a>
+        `;
+        list.appendChild(card);
+      });
+    })
+    .catch(error => {
+      console.error('Error loading places:', error);
+    });
+  </script>
+
+</body>
+</html>
+
